@@ -38,7 +38,7 @@ class ND_Amex_ServerController extends ND_Amex_Controller_Abstract
         }
         elseif($responseParams['vpc_TxnResponseCode']=='0')
         {            
-            Mage::getModel('migsvpc/server')->afterSuccessOrder($responseParams);
+            Mage::getModel('amex/server')->afterSuccessOrder($responseParams);
             $cart = Mage::getSingleton('checkout/cart');
             $cart->truncate();
             $cart->save();

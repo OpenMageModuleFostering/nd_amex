@@ -130,17 +130,22 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
         $lengs = 0;        
         $paymentInfo = $this->getInfoInstance();
         $fields = array(
-                    //"Title"=>'Amex VPC',
                     "vpc_AccessCode"=>$this->getAccessCode(),
-                    "vpc_Amount"=>$this->_getAmount(), // 1000 - For Testing
+                    "vpc_Amount"=>$this->_getAmount(), // 1000 - For Testing                    
+                    /*"vpc_CardExp"=>,
+                    "vpc_CardNum"=>,
+                    "vpc_CardSecurityCode"=>,*/
                     "vpc_Command"=>"pay",
+                    //"vpc_Currency"=>$paymentInfo->getOrder()->getBaseCurrencyCode(),                    
                     "vpc_Locale"=>"en",
                     "vpc_MerchTxnRef"=>$paymentInfo->getOrder()->getRealOrderId(),                    
                     "vpc_Merchant"=>$this->getMerchantId(),                    
                     "vpc_OrderInfo"=>$paymentInfo->getOrder()->getRealOrderId(),                                                
                     "vpc_ReturnURL"=>Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true)),
                     "vpc_TicketNo"=>'1',
-                    "vpc_Version"=>'1'
+                    "vpc_Version"=>'1',
+                    "vpc_card"=>"Amex",
+                    "vpc_gateway"=>"ssl",
                     );
         $str = '';
         foreach($fields as $key => $val)                
@@ -149,19 +154,20 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
         }
 
         $secure_hash_key = strtoupper(md5($this->getSecureHashKey().$str));
-
-        //$fieldsArr['Title'] = 'Amex VPC';       
+   
         $fieldsArr['vpc_AccessCode'] = $this->getAccessCode();       
         $fieldsArr['vpc_Amount'] = $this->_getAmount();
         $fieldsArr['vpc_Command'] = 'pay';
-        //$fieldsArr['vpc_Currency']='USD';
+        //$fieldsArr['vpc_Currency']=$paymentInfo->getOrder()->getBaseCurrencyCode();
         $fieldsArr['vpc_Locale'] = 'en';
         $fieldsArr['vpc_MerchTxnRef'] = $paymentInfo->getOrder()->getRealOrderId();
         $fieldsArr['vpc_Merchant'] = $this->getMerchantId();                
         $fieldsArr['vpc_OrderInfo'] = $paymentInfo->getOrder()->getRealOrderId();        
         $fieldsArr['vpc_ReturnURL'] = Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true));                
         $fieldsArr['vpc_TicketNo'] = '1';        
-        $fieldsArr['vpc_Version'] = '1';        
+        $fieldsArr['vpc_Version'] = '1';  
+        $fieldsArr['vpc_card'] = 'Amex';        
+        $fieldsArr['vpc_gateway'] = 'ssl';  
         $fieldsArr['vpc_SecureHash'] = $secure_hash_key;        
         
         return $fieldsArr;
@@ -254,7 +260,16 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
         //$paymentInst->setTransactionId($response['vpc_TransactionNo']); 
         $paymentInst->setStatus(self::STATUS_APPROVED)
                 ->setLastTransId($response->Reference)
-                ->setTransactionId($response->Reference);
+                ->setTransactionId($response->Reference)
+                ->setAdditionalInformation(ND_Amex_Model_Info::ORDER_INFO,$response['vpc_OrderInfo'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::RECEIPT_NO,$response['vpc_ReceiptNo'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::TRANSACTION_NO,$response['vpc_TransactionNo'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::TRANSACTION_CODE,$response['vpc_TransactionCode'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::MERCH_TXN_REF,$response['vpc_MerchTxnRef'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::BATCH_NO,$response['vpc_BatchNo'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::AVS_RESULT_CODE,$response['vpc_AVSResultCode'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::AVS_RESPONSE_CODE,$response['vpc_AcqAVSRespCode'])
+                ->setAdditionalInformation(ND_Amex_Model_Info::ACQ_CSC_RESPONSE_CODE,$response['vpc_AcqCSCRespCode']);
                 /*->setAdditionalInformation(ND_Amex_Model_Info::PAN_INFO,$response->PAN)
                 ->setAdditionalInformation(ND_Amex_Model_Info::AUTH_CODE,$response->AuthCode)
                 ->setAdditionalInformation(ND_Amex_Model_Info::SCHEME,$response->Scheme);*/
