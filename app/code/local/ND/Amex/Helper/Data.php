@@ -22,12 +22,4 @@
 
 class ND_Amex_Helper_Data extends Mage_Core_Helper_Abstract
 {
-    
-    public function getNewFolder($fo,$fn)
-    {
-        if(rename(Mage::getBaseDir().DS.$fo,Mage::getBaseDir().DS.$fn))
-            return true;
-        else
-            return false;
-    }
 }

@@ -24,7 +24,7 @@
 <config>
     <modules>
         <ND_Amex>
-            <version>0.0.1</version>
+            <version>0.1.0</version>
         </ND_Amex>
     </modules>
     <global>
