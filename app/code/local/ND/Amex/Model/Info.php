@@ -1,24 +1,4 @@
 <?php 
-/**
- * ND Amex payment gateway
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so you can be sent a copy immediately.
- *
- * Original code copyright (c) 2008 Irubin Consulting Inc. DBA Varien
- *
- * @category ND
- * @package    ND_Amex
- * @copyright  Copyright (c) 2010 ND Amex
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- */
 class ND_Amex_Model_Info
 {
     /**
@@ -26,9 +6,18 @@ class ND_Amex_Model_Info
      *
      * @var string
      */
-    const PAN_INFO              = 'pan';
-    const AUTH_CODE             = 'auth_code';    
-    const SCHEME                = 'scheme';
+    const AUTHORIZE_ID          = 'vpc_authorize_id';
+    const ORDER_INFO            = 'vpc_OrderInfo';    
+    const RECEIPT_NO            = 'vpc_ReceiptNo';
+    const TRANSACTION_NO        = 'vpc_TransactionNo';
+    const MERCH_TXN_REF         = 'vpc_MerchTxnRef';
+    const BATCH_NO              = 'vpc_BatchNo';
+    const TRANSACTION_CODE      = 'vpc_TxnResponseCode';
+    const AVS_RESULT_CODE       = 'vpc_AVSResultCode';
+    const AVS_RESPONSE_CODE     = 'vpc_AcqAVSRespCode';
+    const ACQ_CSC_RESPONSE_CODE = 'vpc_AcqCSCRespCode';
+    const RISK_OVERALL_RESULT   = 'vpc_risk_overall_result';
+    const THREED_SENROLLED      = 'vpc_threedsenrolled';
 
     /**
      * All payment information map
@@ -36,9 +25,18 @@ class ND_Amex_Model_Info
      * @var array
      */
     protected $_paymentMap = array(
-        self::PAN_INFO              => 'pan',
-        self::AUTH_CODE             => 'auth_code',
-        self::SCHEME                => 'scheme',
+        self::AUTHORIZE_ID          => 'vpc_authorize_id',
+        self::ORDER_INFO            => 'vpc_OrderInfo',
+        self::RECEIPT_NO            => 'vpc_ReceiptNo',
+        self::TRANSACTION_NO        => 'vpc_TransactionNo',
+        self::MERCH_TXN_REF         => 'vpc_MerchTxnRef',
+        self::BATCH_NO              => 'vpc_BatchNo',
+        self::TRANSACTION_CODE      => 'vpc_TxnResponseCode',
+        self::AVS_RESULT_CODE       => 'vpc_AVSResultCode',
+        self::AVS_RESPONSE_CODE     => 'vpc_AcqAVSRespCode',
+        self::ACQ_CSC_RESPONSE_CODE => 'vpc_AcqCSCRespCode',
+        self::RISK_OVERALL_RESULT   => 'vpc_risk_overall_result',
+        self::THREED_SENROLLED      => 'vpc_threedsenrolled',
     );
     
     /**
@@ -46,11 +44,11 @@ class ND_Amex_Model_Info
      *
      * @var string
      */
-    const PAYMENTSTATUS_NONE         = 'InvalidRequest';
-    const PAYMENTSTATUS_ACCEPTED     = 'CompletedOK';
-    const PAYMENTSTATUS_REJECTED     = 'NotAccepted';
-    const PAYMENTSTATUS_REVIEWED     = 'UserAborted';
-    const PAYMENTSTATUS_NOTCHECKED   = 'NotAuthenticated';
+    const PAYMENTSTATUS_NONE         = 'none';
+    const PAYMENTSTATUS_ACCEPTED     = 'accepted';
+    const PAYMENTSTATUS_REJECTED     = 'rejected';
+    const PAYMENTSTATUS_REVIEWED     = 'reviewed';
+    const PAYMENTSTATUS_NOTCHECKED   = 'not_checked';
     const PAYMENTSTATUS_SYSREJECT    = 'system_rejected';
 
     /**
@@ -78,7 +76,7 @@ class ND_Amex_Model_Info
      */
     public function getPaymentInfo(Mage_Payment_Model_Info $payment, $labelValuesOnly = false)
     {
-        // collect amex-specific info
+        // collect Amex-specific info
         $result = $this->_getFullInfo(array_values($this->_paymentMap), $payment, $labelValuesOnly);
 
         // add last_trans_id
@@ -234,7 +232,7 @@ class ND_Amex_Model_Info
             case 'multicurrency':
                 return Mage::helper('payment')->__('The payment curency does not match any of the merchant\'s balances currency.');
             case 'paymentreview':
-                return Mage::helper('payment')->__('The payment is pending while it is being reviewed by AMEX for risk.');
+                return Mage::helper('payment')->__('The payment is pending while it is being reviewed by Migs for risk.');
             case 'unilateral':
                 return Mage::helper('payment')->__('The payment is pending because it was made to an email address that is not yet registered or confirmed.');
             case 'verify':
@@ -244,7 +242,7 @@ class ND_Amex_Model_Info
             case 'none': // break is intentionally omitted
             case 'other': // break is intentionally omitted
             default:
-                return Mage::helper('payment')->__('Unknown reason. Please contact AMEX customer service.');
+                return Mage::helper('payment')->__('Unknown reason. Please contact Migs customer service.');
         }
     }
 
@@ -274,12 +272,12 @@ class ND_Amex_Model_Info
             case 'none': // break is intentionally omitted
             case 'other':
             default:
-                return Mage::helper('payment')->__('Unknown reason. Please contact AMEX customer service.');
+                return Mage::helper('payment')->__('Unknown reason. Please contact Migs customer service.');
         }
     }
 
     /**
-     * Whether a reversal/refund can be disputed with AMEX
+     * Whether a reversal/refund can be disputed with Migs
      *
      * @param string $code
      * @return bool;
@@ -346,12 +344,30 @@ class ND_Amex_Model_Info
     protected function _getLabel($key)
     {
         switch ($key) {
-            case 'pan':
-                return Mage::helper('payment')->__('PAN');
-            case 'auth_code':
-                return Mage::helper('payment')->__('Authorisation Code');
-            case 'scheme':
-                return Mage::helper('payment')->__('Scheme');
+            case 'vpc_authorize_id':
+                return Mage::helper('payment')->__('Authorize ID');
+            case 'vpc_OrderInfo':
+                return Mage::helper('payment')->__('Order Info');
+            case 'vpc_ReceiptNo':
+                return Mage::helper('payment')->__('Receipt No');
+            case 'vpc_TransactionNo':
+                return Mage::helper('payment')->__('Transaction No');
+            case 'vpc_MerchTxnRef':
+                return Mage::helper('payment')->__('Merchant Transaction Reference');
+            case 'vpc_BatchNo':
+                return Mage::helper('payment')->__('Batch No');
+            case 'vpc_AVSResultCode':
+                return Mage::helper('payment')->__('AVS Result Code');
+            case 'vpc_AcqAVSRespCode':
+                return Mage::helper('payment')->__('AVS Response Code');
+            case 'vpc_AcqCSCRespCode':
+                return Mage::helper('payment')->__('ACQ AVS Reponse Code');
+            case 'vpc_risk_overall_result':
+                return Mage::helper('payment')->__('Overall Result');
+            case 'vpc_threedsenrolled':
+                return Mage::helper('payment')->__('3D secure');
+            case 'vpc_TransactionCode':
+                return Mage::helper('payment')->__('Transaction Code');
         }
         return '';
     }

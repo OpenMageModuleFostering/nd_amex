@@ -25,14 +25,18 @@ class ND_Amex_Block_Server_Redirect extends Mage_Core_Block_Abstract
     protected function _toHtml()
     {
         $server = $this->getOrder()->getPayment()->getMethodInstance();
-
+        if(!$server->getFormFields()) {
+            Mage::getSingleton('core/session')->addError(Mage::helper('core')->__('Some of the information you have provided is incorrect, please do try again. If the problem persists, please call American Express Customer Service Unit on toll free 800 124 2229 within the Kingdom of Saudi Arabia or +9661 474 9035 outside of the Kingdom. Thank you.'));
+            $url = Mage::getUrl('checkout/cart');
+            Mage::app()->getResponse()->setRedirect($url);
+            return;
+        }
         $form = new Varien_Data_Form();
         //$form->setAction($server->getAmexServerUrl())
         $form->setId('amex_server_checkout')
             ->setName('amex_server_checkout')
             ->setMethod('POST')
-            ->setUseContainer(true);
-        
+            ->setUseContainer(true);                
         foreach ($server->getFormFields() as $field=>$value) {
             $form->addField($field, 'hidden', array('name'=>$field, 'value'=>$value));
         }

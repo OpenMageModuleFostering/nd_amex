@@ -91,6 +91,18 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
         $password = Mage::getStoreConfig('payment/' . $this->getCode() . '/password');        
         return $password;            
     }
+    
+    public function getAccessCode()
+    {
+        $access_code = Mage::getStoreConfig('payment/' . $this->getCode() . '/access_code');
+        return $access_code;            
+    }
+    
+    public function getSecureHashKey()
+    {
+        $secure_hash_key = Mage::getStoreConfig('payment/' . $this->getCode() . '/secure_hash_secret');
+        return $secure_hash_key;
+    }
 
     public function validate()
     {   
@@ -101,7 +113,7 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
     {
         $url = Mage::getUrl('amex/' . $this->_paymentMethod . '/redirect');
         if(!$url) {
-            $url = 'https://preprod-ae3g.its-online-services.com/Paypage/Create.aspx';
+            $url = 'https://vpos.amxvpos.com/vpcpay';
         }
         return $url;
     }
@@ -112,66 +124,45 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
      * @return array
      */
     public function getFormFields()
-    {        
+    {            
+        $gateway_url=$this->getAmexServerUrl();
         $fieldsArr = array();        
-        $paymentInfo = $this->getInfoInstance();
         $lengs = 0;        
-        
-        /*$currency_code = Mage::app()->getStore()-> getCurrentCurrencyCode();
+        $paymentInfo = $this->getInfoInstance();
         $fields = array(
-                    "SupplierID"=>$this->getMerchantId(),
-                    "Amount"=>$this->_getAmount(), // 1000 - For Testing
-                    "Password"=>$this->getPassword(),
-                    "CountryCode"=>"USA",
-                    "AmexOnly"=>"Y",
-                    "CMName"=>"Y",
-                    "Reference1"=>"N",
-                    "Reference2"=>"N",
-                    "BypassMPI"=>"N",
-                    "CurrencyCode"=>$currency_code,
-                    "Reference"=>$paymentInfo->getOrder()->getRealOrderId(),                                                    
-                    "OnCompletionURL"=>Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true)),
-                    "OnErrorURL"=>Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true))
-                    );      
-        
+                    //"Title"=>'Amex VPC',
+                    "vpc_AccessCode"=>$this->getAccessCode(),
+                    "vpc_Amount"=>$this->_getAmount(), // 1000 - For Testing
+                    "vpc_Command"=>"pay",
+                    "vpc_Locale"=>"en",
+                    "vpc_MerchTxnRef"=>$paymentInfo->getOrder()->getRealOrderId(),                    
+                    "vpc_Merchant"=>$this->getMerchantId(),                    
+                    "vpc_OrderInfo"=>$paymentInfo->getOrder()->getRealOrderId(),                                                
+                    "vpc_ReturnURL"=>Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true)),
+                    "vpc_TicketNo"=>'1',
+                    "vpc_Version"=>'1'
+                    );
+        $str = '';
         foreach($fields as $key => $val)                
         {
-            $fieldsArr[$key] = $val;
-        }*/       
-        
-        $order_id = $paymentInfo->getOrder()->getRealOrderId();       
-        $coutry_code = "GBR"; //Mage::getStoreConfig('general/country/default');
-		$language_code = "GBR";
-        $merchant_id = $this->getMerchantId();
-        $merchant_pwd = $this->getPassword();
-        $gateway_url=$this->getAmexServerUrl();
-        $amount = $this->_getAmount();
-        $currency_code =  "SAR"; //Mage::app()->getStore()->getCurrentCurrencyCode();
-        $url =  $gateway_url."?SupplierID=".$merchant_id."&Password=".$merchant_pwd."&Reference=".$order_id."&Amount=".$amount."&CurrencyCode=".$currency_code."&CountryCode=".$coutry_code. "&Language=" . $language_code . "&AmexOnly=Y&CVV=Y&OrientationCode=ltr&BypassMPI=Y&AutoLevel1Settlement=Y&CMName=Y&Reference1=N&Reference2=N&OnCompletionURL=".Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true))."&OnErrorURL=".Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true)) ;
-        //echo $url;die;
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,$url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        $ch_result = curl_exec($ch);
-        //$ch_error = curl_error($ch);
-        //curl_getinfo($ch);
-        curl_close($ch);
-        /*$start = strpos($ch_result, "<PaypageURL>")+12;
-        $end = strpos($ch_result, "</PaypageURL>") - $start;
-        $this->_paymentUrl = htmlspecialchars_decode(substr($ch_result, $start, $end));*/
-        
-        //print_r($ch_result);die;
-        $xmlString = simplexml_load_string($ch_result);
-        if($xmlString->Code=='0')
-            $this->_paymentUrl = $xmlString->PaypageURL;
-        else {
-            Mage::getSingleton('core/session')->addError(Mage::helper('core')->__('Some of the information you have provided is incorrect, please do try again. If the problem persists, please call American Express Customer Service Unit on toll free 800 124 2229 within the Kingdom of Saudi Arabia or +9661 474 9035 outside of the Kingdom. Thank you.'));
-            $this->_redirect('checkout/cart');
-            return;
+            $str .= $val;
         }
-             
+
+        $secure_hash_key = strtoupper(md5($this->getSecureHashKey().$str));
+
+        //$fieldsArr['Title'] = 'Amex VPC';       
+        $fieldsArr['vpc_AccessCode'] = $this->getAccessCode();       
+        $fieldsArr['vpc_Amount'] = $this->_getAmount();
+        $fieldsArr['vpc_Command'] = 'pay';
+        //$fieldsArr['vpc_Currency']='USD';
+        $fieldsArr['vpc_Locale'] = 'en';
+        $fieldsArr['vpc_MerchTxnRef'] = $paymentInfo->getOrder()->getRealOrderId();
+        $fieldsArr['vpc_Merchant'] = $this->getMerchantId();                
+        $fieldsArr['vpc_OrderInfo'] = $paymentInfo->getOrder()->getRealOrderId();        
+        $fieldsArr['vpc_ReturnURL'] = Mage::getUrl('amex/' . $this->_paymentMethod . '/response', array('_secure' => true));                
+        $fieldsArr['vpc_TicketNo'] = '1';        
+        $fieldsArr['vpc_Version'] = '1';        
+        $fieldsArr['vpc_SecureHash'] = $secure_hash_key;        
         
         return $fieldsArr;
     }
@@ -184,7 +175,7 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
     public function getAmexServerUrl()
     {
          if (!$url = Mage::getStoreConfig('payment/' . $this->getCode() . '/api_url')) {
-             $url = 'https://preprod-ae3g.its-online-services.com/Paypage/Create.aspx';
+             $url = 'https://vpos.amxvpos.com/vpcpay';
          }
          return $url;
     }
@@ -192,7 +183,7 @@ class ND_Amex_Model_Server extends Mage_Payment_Model_Method_Abstract
     public function getAmexTransactionUrl()
     {
          if (!$this->_paymentUrl) {
-             $this->_paymentUrl = 'https://preprod-ae3g.its-online-services.com/paypage/transaction.aspx';
+             $this->_paymentUrl = 'https://vpos.amxvpos.com/vpcpay';
          }
          return $this->_paymentUrl;
     }

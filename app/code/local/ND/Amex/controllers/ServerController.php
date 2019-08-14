@@ -26,25 +26,30 @@ class ND_Amex_ServerController extends ND_Amex_Controller_Abstract
     
     public function responseAction()
     {
-        $responseXml = $this->getRequest()->getParams(); 
-        $responseParams = simplexml_load_string($responseXml['XML']);  
+        $responseParams = $this->getRequest()->getParams();   
         //echo '<pre>';print_r($responseParams);die;
-        if($responseParams->Code=='3')
+        /*$this->loadLayout();  
+        $this->renderLayout();*/        
+        if($responseParams['vpc_TxnResponseCode']=='7')
         {
-            Mage::getSingleton('core/session')->addError(Mage::helper('core')->__('Transaction is aborted by user'));
+            Mage::getSingleton('core/session')->addError(Mage::helper('core')->__($responseParams['vpc_Message']));
             $this->_redirect('checkout/cart');
             return;
         }
-        elseif($responseParams->Code=='2')
+        elseif($responseParams['vpc_TxnResponseCode']=='0')
         {            
-            Mage::getModel('amex/server')->afterSuccessOrder($responseParams);
+            Mage::getModel('migsvpc/server')->afterSuccessOrder($responseParams);
+            $cart = Mage::getSingleton('checkout/cart');
+            $cart->truncate();
+            $cart->save();
+            $cart->getItems()->clear()->save();
             //Mage::getSingleton('core/session')->addSuccess(Mage::helper('core')->__($responseParams['vpc_Message']));
             $this->_redirect('checkout/onepage/success');
             return;
         }
         else
         {
-            Mage::getSingleton('core/session')->addError(Mage::helper('core')->__('Trasaction Failed'));
+            Mage::getSingleton('core/session')->addError(Mage::helper('core')->__($responseParams['vpc_Message']));
             $this->_redirect('checkout/cart');
             return;
         }

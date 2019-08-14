@@ -28,7 +28,7 @@
                 <amex_server translate="label" module="payment">
                     <label>Amex Express</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>301</sort_order>
+                    <sort_order>401</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>0</show_in_store>
@@ -67,6 +67,22 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
                         </password>
+                        <access_code translate="label">
+                            <label>Access Code</label>
+                            <frontend_type>text</frontend_type>                            
+                            <sort_order>50</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </access_code>
+                        <secure_hash_secret translate="label">
+                            <label>Secure Hash Secret</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>60</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </secure_hash_secret>
                         <api_url translate="label">
                             <label>API Gateway URL</label>
                             <frontend_type>text</frontend_type>
