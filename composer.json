@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/ND_Amex",
+    "name": "OpenMageModuleFostering\/ND_Amex",
     "type": "magento-module",
     "license": "OSL-v3.0",
     "homepage": "",
     "description": "Amex payment method integration",
     "authors": [
-    {
-        "name": "Nikul Doshi",
-        "email": "nikulonline@gmail.com"
-    }
-],
+        {
+            "name": "Nikul Doshi",
+            "email": "nikulonline@gmail.com"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
